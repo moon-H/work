@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">BleTest</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_zip_test">ZipTest</string>
+    <string name="title_activity_map_test">MapTestActivity</string>
+    <string name="title_activity_silent_install">SilentInstallActivity</string>
+    <string name="title_activity_pick_photo">PickPhotoActivity</string>
+
+    <string name="unknown_device">Unknown device</string>
+
+
+</resources>

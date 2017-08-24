@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="start"/>
+
+    <Button
+        android:id="@+id/btn_stop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="stop"/>
+
+    <Button
+        android:id="@+id/btn_start2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="start2"/>
+
+    <Button
+        android:id="@+id/btn_stop2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="stop2"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/service_detail_arc_block_margin_top"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.cssweb.mytest.arc.ArcProgress
+                android:id="@+id/balance_progress1"
+                android:layout_width="@dimen/service_detail_arc_width3"
+                android:layout_height="@dimen/service_detail_arc_width3"
+                android:background="@android:color/transparent"
+                app:arc_angle_offset="0.6"
+                app:arc_stroke_width="@dimen/service_detail_arc_stroke1"/>
+
+            <!--<com.cssweb.mytest.arc.ArcProgress-->
+            <!--android:id="@+id/balance_progress2_1"-->
+
+            <!--android:layout_width="@dimen/service_detail_arc_width2"-->
+            <!--android:layout_height="@dimen/service_detail_arc_width2"-->
+            <!--android:layout_marginLeft="@dimen/service_detail_arc_margin_top1"-->
+            <!--android:layout_marginTop="@dimen/service_detail_arc_margin_top1"-->
+            <!--app:arc_paint_type="0"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--app:arc_stroke_width="@dimen/service_detail_arc_stroke2"/>-->
+            <com.cssweb.mytest.arc.ArcProgress
+                android:id="@+id/balance_progress2"
+                android:layout_width="@dimen/service_detail_arc_width2"
+                android:layout_height="@dimen/service_detail_arc_width2"
+                android:layout_marginLeft="@dimen/service_detail_arc_margin_top1"
+                android:layout_marginTop="@dimen/service_detail_arc_margin_top1"
+                android:background="@android:color/transparent"
+                app:arc_angle_offset="0.6"
+                app:arc_draw_text="true"
+
+                app:arc_paint_type="1"
+                app:arc_stroke_width="@dimen/service_detail_arc_stroke2"
+                app:arc_text_size="24sp"/>
+
+            <com.cssweb.mytest.arc.ArcProgress
+                android:id="@+id/balance_progress3"
+                android:layout_width="@dimen/service_detail_arc_width1"
+                android:layout_height="@dimen/service_detail_arc_width1"
+                android:layout_marginLeft="@dimen/service_detail_arc_margin_top2"
+                android:layout_marginTop="@dimen/service_detail_arc_margin_top2"
+
+                android:background="@android:color/transparent"
+                app:arc_angle_offset="0.7"
+                app:arc_stroke_width="@dimen/service_detail_arc_stroke1"/>
+        </FrameLayout>
+
+
+    </LinearLayout>
+
+    <com.cssweb.mytest.arc.ArcProgress
+        android:visibility="gone"
+        android:id="@+id/balance_progress4"
+        android:layout_width="@dimen/service_detail_arc_width2"
+        android:layout_height="@dimen/service_detail_arc_width2"
+        android:layout_marginLeft="@dimen/service_detail_arc_margin_top1"
+        android:layout_marginTop="@dimen/service_detail_arc_margin_top1"
+        android:background="@android:color/transparent"
+        app:arc_draw_text="true"
+        app:arc_paint_type="1"
+        app:arc_stroke_width="@dimen/service_detail_arc_stroke2"
+        app:arc_text_size="24sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:background="@android:color/holo_red_dark"></LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="weight=1"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:background="@android:color/holo_red_dark"></LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_height="100dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:background="@android:color/holo_red_dark"></LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="weight=1"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:background="@android:color/holo_red_dark"></LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

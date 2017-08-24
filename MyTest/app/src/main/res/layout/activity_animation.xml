@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.cssweb.mytest.animation.VDHLayout
+    android:id="@+id/content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/one"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/holo_blue_bright"
+        android:text="标尺1"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_below="@id/one"
+        android:layout_height="40dp"
+        android:background="@android:color/holo_green_dark"
+        android:text="标尺2"/>
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:layout_gravity="center"-->
+    <!--android:layout_marginTop="10dp"-->
+    <!--android:background="@android:color/holo_red_dark"-->
+    <!--android:clickable="true"-->
+    <!--android:gravity="center"-->
+    <!--android:text="I can be dragged !"/>-->
+
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:layout_gravity="center"-->
+    <!--android:layout_marginTop="20dp"-->
+    <!--android:background="#8800ff00"-->
+    <!--android:clickable="true"-->
+    <!--android:gravity="center"-->
+    <!--android:text="i will back to origin pos !"/>-->
+
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:layout_gravity="center"-->
+    <!--android:layout_marginTop="30dp"-->
+    <!--android:background="@android:color/holo_blue_bright"-->
+    <!--android:clickable="true"-->
+    <!--android:gravity="center"-->
+    <!--android:text="use edge tracker to operate me !"/>-->
+    <LinearLayout
+        android:id="@+id/lly_drag"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="-200dp"
+        android:background="@android:color/holo_red_dark"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="123adfalfdj;aljfd;aljd;lajfd;lkajd;ljd;ljlkj;l"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="123"/>
+    </LinearLayout>
+</com.cssweb.mytest.animation.VDHLayout>

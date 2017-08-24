@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="aaa">#FF9605</color>
+    <color name="finished_colors">#ECECEC</color>
+    <color name="un_finished_colors">#FC876B</color>
+    <color name="st_total_price_text">#D00000</color>
+    <color name="red">#D00000</color>
+    <color name="about_tel">#197dcd</color>
+    <color name="blue">#197dcd</color>
+
+</resources>
