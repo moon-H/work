@@ -9,7 +9,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
+/***
+ * 修改路网图碎片主类
+ * */
 public class Tool {
 
 	public static void main(String[] args) {
