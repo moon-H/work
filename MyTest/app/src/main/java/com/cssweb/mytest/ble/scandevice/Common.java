@@ -18,9 +18,9 @@ public class Common {
     public static final int MSG_START_HEART_BEAT = 103;
     public static final int MSG_STOP_HEART_BEAT = 104;
 
-    public static final UUID UUID_SERVICE_ENTRY_GATE = UUID.fromString("000001FA-0000-1000-8000-00805f9b34fb");
-    public static final UUID UUID_SERVICE_EXIT_GATE = UUID.fromString("000001FB-0000-1000-8000-00805f9b34fb");
 
+    public static final UUID UUID_SERVICE_ENTRY_GATE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
+    public static final UUID UUID_SERVICE_EXIT_GATE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
 
     //    public static final UUID UUID_SERVICE_ENTRY_GATE = UUID.fromString("516d165d-8c96-4dda-83c0-9f1f21cff966");
     //    public static final UUID UUID_SERVICE_EXIT_GATE = UUID.fromString("386a4aed-1bcb-4aac-a599-718f78f7d27e");

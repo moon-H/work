@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.cssweb.framework.utils.MLog;
 import com.cssweb.jni.CNACrypto;
 import com.cssweb.jni.QRCodeUsbPosImpl;
 import com.cssweb.mytest.HexConverter;
@@ -19,6 +20,10 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by lenovo on 2017/7/6.
@@ -32,7 +37,7 @@ public class ReadQrCodeActivity extends FragmentActivity {
     static {
         Log.d("123123", "QRCodeUsbPosImpl-----------1");
         System.loadLibrary("qrcode");
-        System.loadLibrary("usb1.0Android");
+        //        System.loadLibrary("usb1.0Android");
         System.load("/system/lib/libssl.so");
         System.load("/system/lib/libcrypto.so");
         Log.d("123123", "QRCodeUsbPosImpl-----------2");
@@ -47,6 +52,7 @@ public class ReadQrCodeActivity extends FragmentActivity {
     private TextView mTextView;
     Handler mHandler = new Handler();
     StringBuilder mStringBuilder = new StringBuilder();
+    ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -114,23 +120,34 @@ public class ReadQrCodeActivity extends FragmentActivity {
         mQrCodeTask = new TimerTask() {
             @Override
             public void run() {
-                byte[] data = qrCodeUsbPos.GetQRCodeString();
-                Log.d(TAG, "  ----GetStatus2222- ");
-                Log.d(TAG, "  ----GetStatus- " + HexConverter.bytesToHexString(data));
-                if (data != null) {
-                    mStringBuilder.append("byte 长度 = " + data.length).append("\n");
-                }
-                mStringBuilder.append(dateFormat.format(System.currentTimeMillis()) + "---" + HexConverter.bytesToHexString(data)).append("\n");
-                mHandler.post(new Runnable() {
+                Log.d(TAG, "  ----start ");
+                final long millisSecond = System.currentTimeMillis();
+                Future<String> signFuture = mExecutorService.submit(new Callable<String>() {
                     @Override
-                    public void run() {
-                        mTextView.setText(mStringBuilder.toString());
+                    public String call() throws Exception {
+                        byte[] data = qrCodeUsbPos.GetQRCodeString();
+                        Log.d(TAG, "  GetQRCodeString-");
+                        Log.d(TAG, "  GetQRCodeString : " + HexConverter.bytesToHexString(data));
+                        if (data != null) {
+                            mStringBuilder.append("byte 长度 = " + data.length).append("\n");
+                        }
+                        mStringBuilder.append(dateFormat.format(System.currentTimeMillis()) + "---" + HexConverter.bytesToHexString(data)).append("\n");
+                        return "";
                     }
                 });
+                try {
+                    String res = signFuture.get();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "  ----Exception- ");
+                }
+                long gap = System.currentTimeMillis() - millisSecond;
+                MLog.d(TAG, "sign Time : " + gap);
+                Log.d(TAG, "  ----stop ");
             }
         };
-        //        qrCodeUsbPos.StopWork();
-        mTimer.schedule(mQrCodeTask, 0, 1000);
+        qrCodeUsbPos.StopWork();
+        mTimer.schedule(mQrCodeTask, 0, 3000);
     }
 
     private void lookDeviceInfo() {

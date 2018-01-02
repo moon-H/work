@@ -2,18 +2,22 @@ package com.cssweb.mytest.ble.scandevice;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
@@ -28,10 +32,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cssweb.framework.utils.HexConverter;
+import com.cssweb.framework.utils.MLog;
 import com.cssweb.mytest.CustomDialog;
-import com.cssweb.mytest.HexConverter;
 import com.cssweb.mytest.R;
-import com.cssweb.mytest.Utils;
 import com.cssweb.mytest.utils.ByteConverter;
 
 import org.apache.commons.net.util.Base64;
@@ -46,6 +50,8 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +96,10 @@ public class ScanDeviceActivity extends FragmentActivity {
 
     int mScanType;
 
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothManager mBluetoothManager;
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,19 +119,8 @@ public class ScanDeviceActivity extends FragmentActivity {
         mBtnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mScanType = 1;
-                mScanResultList.clear();
-                mMyAdapter.notifyDataSetChanged();
-
-                mProgressDialog.show();
-
-                mCenterManager.startScanLeDevice(mUUIDArrayList, SCAN_DEVICE_TIME);
-                //                Intent intent = new Intent();
-                //                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                //                intent.setAction(Intent.ACTION_MAIN);
-                //                intent.setComponent(new ComponentName("com.cssweb.shankephone", "com.cssweb.shankephone.login.SplashActivity"));
-                //                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                //                startActivity(intent);
+                //                scanNewApi();
+                startScanOldApi();
             }
         });
 
@@ -181,8 +179,22 @@ public class ScanDeviceActivity extends FragmentActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
 
+        String data = "020100020A0107160D18A333B44403020D180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        ParsedAd ad = parseData(com.cssweb.framework.utils.HexConverter.hexStringToBytes(data));
+        MLog.d(TAG, "parse data= " + ad);
+    }
 
+    private void scanNewApi() {
+        mScanType = 1;
+        mScanResultList.clear();
+        mMyAdapter.notifyDataSetChanged();
+
+        mProgressDialog.show();
+
+        mCenterManager.startScanLeDevice(mUUIDArrayList, SCAN_DEVICE_TIME);
     }
 
     public static String encryptThreeDESECB(String src, String key) throws Exception {
@@ -428,27 +440,50 @@ public class ScanDeviceActivity extends FragmentActivity {
                     byte[] bytesData = HexConverter.hexStringToBytes(data);
 
                     if (mScanType == 1) {
-                        byte[] byteSjtStatus = Arrays.copyOfRange(bytesData, 4, 5);
-                        byte[] byteDeviceCode = Arrays.copyOfRange(bytesData, 5, 10);
-                        byte[] byteTrxType = Arrays.copyOfRange(bytesData, 10, 11);
-                        byte[] byteTrxAmount = Arrays.copyOfRange(bytesData, 11, 13);
-                        byte[] byteHandleDate = Arrays.copyOfRange(bytesData, 13, 16);
 
-                        String sjtStatus = ByteConverter.bcd2Str(byteSjtStatus);
-                        String deviceCode = ByteConverter.bcd2Str(byteDeviceCode);
-                        String trxType = ByteConverter.bcd2Str(byteTrxType);
-                        String trxAmountStr = HexConverter.bytesToHexString(byteTrxAmount);
-                        String trxAmountStr2 = Utils.addLeftChar(trxAmountStr, 8, "0");
-                        int trxAmount = ByteConverter.byteToInt(HexConverter.hexStringToBytes(trxAmountStr2));
-                        String handleDate = format2.format(System.currentTimeMillis()) + ByteConverter.bcd2Str(byteHandleDate);
+                        byte[] type = Arrays.copyOfRange(bytesData, 0, 1);
+                        String typeStr = HexConverter.bytesToHexString(type);
+                        String deviceCode = HexConverter.bytesToHexString(Arrays.copyOfRange(bytesData, 1, 5));
+                        String sjt1Type = convertCustomTypeToS5Type(typeStr.substring(0, 1));
+
+                        byte[] orgSjtIdByte = Arrays.copyOfRange(bytesData, 5, 8);
+                        byte[] handleTimeByte = Arrays.copyOfRange(bytesData, 8, 10);
+                        byte[] amount1Byte = Arrays.copyOfRange(bytesData, 10, 11);
+                        int amount1 = Integer.valueOf(HexConverter.bytesToHexString(amount1Byte), 16) * 10;
+
+                        //
+                        //                        byte[] byteSjtStatus = Arrays.copyOfRange(bytesData, 4, 5);
+                        //                        byte[] byteDeviceCode = Arrays.copyOfRange(bytesData, 5, 10);
+                        //                        byte[] byteTrxType = Arrays.copyOfRange(bytesData, 10, 11);
+                        //                        byte[] byteTrxAmount = Arrays.copyOfRange(bytesData, 11, 13);
+                        //                        byte[] byteHandleDate = Arrays.copyOfRange(bytesData, 13, 16);
+
+                        //                        String sjtStatus = ByteConverter.bcd2Str(byteSjtStatus);
+                        ////                        String deviceCode = ByteConverter.bcd2Str(byteDeviceCode);
+                        //                        String trxType = ByteConverter.bcd2Str(byteTrxType);
+                        //                        String trxAmountStr = HexConverter.bytesToHexString(byteTrxAmount);
+                        //                        String trxAmountStr2 = Utils.addLeftChar(trxAmountStr, 8, "0");
+                        //                        int trxAmount = ByteConverter.byteToInt(HexConverter.hexStringToBytes(trxAmountStr2));
+                        //                        String handleDate = format2.format(System.currentTimeMillis()) + ByteConverter.bcd2Str(byteHandleDate);
+
+                        byte[] sjtIdByte = new byte[4];
+                        System.arraycopy(orgSjtIdByte, 0, sjtIdByte, 1, orgSjtIdByte.length);
+                        MLog.d(TAG, "sjtIdByte = " + HexConverter.bytesToHexString(sjtIdByte));
+                        int sjt1Id = ByteConverter.byteToInt(HexConverter.hexStringToBytes(HexConverter.bytesToHexString(sjtIdByte)));
+                        long handleTime1 = Integer.valueOf(HexConverter.bytesToHexString(handleTimeByte), 16);
+
+
+                        String sjt1StationCode = buildStationCode(deviceCode);
+                        MLog.d(TAG, "sjt1Id = " + sjt1Id + " sjt1StationCode = " + sjt1StationCode + " handleTime1 = " + handleTime1 + " mount1 =" + amount1);
+
 
                         builder.append("广播数据").append("  " + mScanType).append("\n");
                         builder.append("sjtId：").append(parseSjtId(scanRecord)).append("\n");
-                        builder.append("SjtStatus：").append(sjtStatus).append("\n");
+                        builder.append("SjtStatus：").append(sjt1Type).append("\n");
                         builder.append("DeviceCode：").append(deviceCode).append("\n");
-                        builder.append("trxType：").append(trxType).append("\n");
-                        builder.append("trxAmount：").append(trxAmount).append("\n");
-                        builder.append("handleDate：").append(handleDate).append("\n");
+                        builder.append("trxType：").append(sjt1Type).append("\n");
+                        //                        builder.append("trxAmount：").append(handleTime1).append("\n");
+                        builder.append("handleDate：").append(handleTime1).append("\n");
                     } else {
                         byte[] type = Arrays.copyOfRange(bytesData, 0, 1);
                         String typeStr = HexConverter.bytesToHexString(type);
@@ -703,5 +738,151 @@ public class ScanDeviceActivity extends FragmentActivity {
         }
         return deviceCode;
     }
+
+    /**
+     * 半个字节自定义类型转换成S5通用类型
+     */
+    private String convertCustomTypeToS5Type(@NonNull String type) {
+        if (!TextUtils.isEmpty(type)) {
+            if (type.equals(CUSTOM_TYPE_ENTRY)) {
+                //进站
+                return ORG_TYPE_ENTRY;
+            } else if (type.equals(CUSTOM_TYPE_EXIT)) {
+                //进站
+                return ORG_TYPE_EXIT;
+            } else if (type.equals(CUSTOM_TYPE_OVER_TIME)) {
+                //超时
+                return ORG_TYPE_OVER_TIME;
+            } else if (type.equals(CUSTOM_TYPE_OVER_JOURNEY)) {
+                //超乘
+                return ORG_TYPE_OVER_JOURNEY;
+            } else if (type.equals(CUSTOM_TYPE_OVER_JOURNEY_AND_TIME)) {
+                //超乘+超时
+                return ORG_TYPE_OVER_JOURNEY_AND_TIME;
+            }
+
+        }
+        return null;
+    }
+
+    private static final String ORG_TYPE_ENTRY = "04";//进站
+    private static final String ORG_TYPE_EXIT = "05";//出站
+    private static final String ORG_TYPE_OVER_TIME = "30";//超时
+    private static final String ORG_TYPE_OVER_JOURNEY = "31";//超乘
+    private static final String ORG_TYPE_OVER_JOURNEY_AND_TIME = "32";//超时+超乘
+    private static final String CUSTOM_TYPE_ENTRY = "1";//进站
+    private static final String CUSTOM_TYPE_EXIT = "2";//出站
+    private static final String CUSTOM_TYPE_OVER_TIME = "3";//超时
+    private static final String CUSTOM_TYPE_OVER_JOURNEY = "4";//超乘
+    private static final String CUSTOM_TYPE_OVER_JOURNEY_AND_TIME = "5";//超时+超乘
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public void startScanOldApi() {
+        MLog.d(TAG, "startScanOldApi");
+        UUID[] uuids = new UUID[]{Common.UUID_SERVICE_EXIT_GATE};
+        //        sendBleBroadCast(ACTION_START_SCAN);
+        //        stopScanOldApi();
+        mBluetoothAdapter.startLeScan(uuids, mLeScanCallback);
+    }
+
+    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+
+        @Override
+        public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
+            //            stopScanOldApi();
+            //            sendBleBroadCast(ACTION_FIND_TARGET_DEVICE, "111111");
+            if (scanRecord != null) {
+                MLog.d(TAG, "DATA= " + HexConverter.bytesToHexString(scanRecord));
+                ParsedAd parsedAd = parseData(scanRecord);
+                MLog.d(TAG, "DATA= " + parsedAd);
+            } else {
+                MLog.d(TAG, "DATA is null ");
+
+            }
+        }
+    };
+
+    /***
+     * 解析广播包数据
+     * */
+    public static ParsedAd parseData(byte[] adv_data) {
+        ParsedAd parsedAd = new ParsedAd();
+        ByteBuffer buffer = ByteBuffer.wrap(adv_data).order(ByteOrder.LITTLE_ENDIAN);
+        MLog.d(TAG, "parseData new = " + HexConverter.bytesToHexString(buffer.array()));
+        while (buffer.remaining() > 2) {
+            byte length = buffer.get();
+            if (length == 0)
+                break;
+            byte type = buffer.get();
+            length -= 1;
+            switch (type) {
+                case 0x01: // Flags
+                    MLog.d(TAG, "type111 = " + type);
+                    parsedAd.flags = buffer.get();
+                    length--;
+                    break;
+                case 0x02: // Partial list of 16-bit UUIDs
+                case 0x03: // Complete list of 16-bit UUIDs
+                case 0x14: // List of 16-bit Service Solicitation UUIDs
+                    MLog.d(TAG, "type222 = " + type);
+                    while (length >= 2) {
+                        parsedAd.uuids.add(UUID.fromString(String.format("%08x-0000-1000-8000-00805f9b34fb", buffer.getShort())));
+                        length -= 2;
+                    }
+                    break;
+                case 0x04: // Partial list of 32 bit service UUIDs
+                case 0x05: // Complete list of 32 bit service UUIDs
+                    MLog.d(TAG, "type333 = " + type);
+                    while (length >= 4) {
+                        parsedAd.uuids.add(UUID.fromString(String.format("%08x-0000-1000-8000-00805f9b34fb", buffer.getInt())));
+                        length -= 4;
+                    }
+                    break;
+                case 0x06: // Partial list of 128-bit UUIDs
+                case 0x07: // Complete list of 128-bit UUIDs
+                case 0x15: // List of 128-bit Service Solicitation UUIDs
+                    MLog.d(TAG, "type444 = " + type);
+                    while (length >= 16) {
+                        long lsb = buffer.getLong();
+                        long msb = buffer.getLong();
+                        parsedAd.uuids.add(new UUID(msb, lsb));
+                        length -= 16;
+                    }
+                    break;
+                case 0x08: // Short local device name
+                case 0x09: // Complete local device name
+                    MLog.d(TAG, "type555 = " + type);
+                    byte sb[] = new byte[length];
+                    buffer.get(sb, 0, length);
+                    length = 0;
+                    parsedAd.localName = new String(sb).trim();
+                    break;
+                case (byte) 0xFF: // Manufacturer Specific Data
+                    MLog.d(TAG, "type666 = " + type);
+                    parsedAd.manufacturer = buffer.getShort();
+                    length -= 2;
+                    break;
+                case (byte) 0x16:
+                    MLog.d(TAG, "UUID = " + String.format("%08x-0000-1000-8000-00805f9b34fb", buffer.getShort()));
+                    byte sb2[] = new byte[length - 2];
+                    buffer.get(sb2, 0, length - 2);
+                    MLog.d(TAG, "Length = " + length + "  ADV DATA = " + HexConverter.bytesToHexString(buffer.array()));
+                    MLog.d(TAG, " CONTENT = " + HexConverter.bytesToHexString(sb2));
+                    length -= length;
+                    break;
+                default: // skip
+                    MLog.d(TAG, "default type = " + type);
+                    break;
+            }
+            if (length > 0) {
+                buffer.position(buffer.position() + length);
+            }
+        }
+        return parsedAd;
+    }
+
+    private void parseAdv(byte[] data) {
+    }
+
 
 }

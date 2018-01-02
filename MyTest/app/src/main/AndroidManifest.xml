@@ -29,15 +29,16 @@
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="false"/>
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-        <uses-feature
-            android:name="android.hardware.nfc"
-            android:required="true"/>
 
         <activity
             android:name=".MainActivity"
@@ -178,11 +179,17 @@
         </activity>
 
         <activity android:name=".ble.scandevice.ScanDeviceActivity">
-
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
         <activity android:name=".qrcodejni.ReadQrCodeActivity">
+
         </activity>
-        <activity android:name=".qrcodejni.CryptoTestActivity">
+        <activity
+            android:name=".qrcodejni.CryptoTestActivity"
+            android:label="签名">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

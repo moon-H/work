@@ -1,7 +1,5 @@
 package com.cssweb.mytest.javatest;
 
-import com.cssweb.framework.security.DES3;
-
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -13,8 +11,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Created by lenovo on 2016/9/7.
@@ -22,26 +27,89 @@ import java.util.List;
 public class Test {
     private static String path = "C:/Users/lenovo/Desktop/css/xian.txt";
     private static String outPath = "C:/Users/lenovo/Desktop/css/station.xls";
+    private static final String KEY = "95C5CD0BBF5E3E5227273458AB39A15C";
 
     public static void main(String[] args) {
+
+
+        //        String key = "4B142EE630356B184B142EE630356B18";
+        //        String org = "0F3560CAFFBAAEA9BEDC7CDD2B633A81343F8BA673C6813AFEC1D603CD2B9BF8CEA2F3A2C563C750";
         //        try {
-        //            readF1(path);
-        //        } catch (IOException e) {
+        //            String src = DesThree.decryptThreeDESECB(HexConverter.hexStringToBytes(org), key);
+        //            System.out.print("-------" + src);
+        //        } catch (Exception e) {
         //            e.printStackTrace();
         //        }
-        //        exportExcel();
-        //        System.out.println(addAlpha("#FFFFFF", 0.9));
-        //        int i = 1;
-        //        Integer intValue = Integer.valueOf(10);
-        //        System.out.println("#byte  = " + HexConverter.byteToHexString(intValue.byteValue()));
 
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA);
+            Date date = dateFormat.parse("20170907092555");
+            long current = System.currentTimeMillis();
+            long expire = date.getTime();
 
+            SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+            System.out.println("-------" + (current > expire));
+            System.out.println("-------2222::" + mDateFormat.format(new Date(1507630856000l)));
+            //            Date tkExpireDate = DateFormat.getDateInstance().parse("20170907092555");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Man man = new Man();
+        man.setAge("19");
+        man.setName("嘿嘿");
 
+        sortTest(man);
     }
 
-    private void intToByte(int value) {
+    private static void sortTest(Object person) {
+        try {
+            Field[] fields = person.getClass().getDeclaredFields();
+            TreeMap<String, String> map = new TreeMap<>();
+            for (Field field : fields) {
+                map.put(field.getName(), String.valueOf(field.get(person)));
 
+                //                System.out.print("成员变量" + i + "类型 : " + fields[i].getType().getName());
+                //                System.out.print("\t成员变量" + i + "变量名: " + fields[i].getName() + "\t");
+                //                System.out.println("成员变量" + i + "值: " + fields[i].get(person));
+            }
+            StringBuilder sb = new StringBuilder();
+            Set<String> keys = map.keySet();
+            for (String key : keys) {
+                sb.append(key).append("=").append(map.get(key)).append("&");
+            }
+            System.out.println("排序后的参数：：：" + sb.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+
+    //        for (Field field : fields) {
+    //            System.out.println("-----field= " + field.getName());
+    //            System.out.println("-----fieldValue= " + field.get(person));
+    //
+    //        }
+
+
+    //    TreeMap<String, String> map = new TreeMap<>();
+    //        map.put("124","hahah");
+    //        map.put("123","hahah");
+    //        map.put("222","hahah");
+    //        map.put("acd","hahah");
+    //        map.put("bcd","hahah");
+    //        map.put("ccd","hahah");
+    //        map.put("cca","hahah");
+    //        System.out.println("-----Map2= "+map.toString());
+    //    Set<String> keys = map.keySet();
+    //        for(
+    //    String key :keys)
+    //
+    //    {
+    //        System.out.println("key  = " + key);
+    //    }
+
+    //}
 
 
     public static String addAlpha(String originalColor, double alpha) {
