@@ -100,6 +100,13 @@ public class DataBuilder {
             if (i < line10.size() - 1) {
                 line10.get(i).next = line10.get(i + 1);
                 line10.get(i + 1).prev = line10.get(i);
+                if (i % 4 == 0) {
+                    line10.get(i).nextDistance = 4;
+                    line10.get(i + 1).preDistance = 4;
+                } else {
+                    line10.get(i).nextDistance = 2;
+                    line10.get(i + 1).preDistance = 2;
+                }
             }
         }
 
@@ -114,6 +121,13 @@ public class DataBuilder {
             if (i < lineS1.size() - 1) {
                 lineS1.get(i).next = lineS1.get(i + 1);
                 lineS1.get(i + 1).prev = lineS1.get(i);
+                if (i % 4 == 0) {
+                    lineS1.get(i).nextDistance = 5;
+                    lineS1.get(i + 1).preDistance = 5;
+                } else {
+                    lineS1.get(i).nextDistance = 2;
+                    lineS1.get(i + 1).preDistance = 2;
+                }
             }
         }
 
@@ -128,17 +142,27 @@ public class DataBuilder {
             if (i < lineS8.size() - 1) {
                 lineS8.get(i).next = lineS8.get(i + 1);
                 lineS8.get(i + 1).prev = lineS8.get(i);
+                if (i % 4 == 0) {
+                    lineS8.get(i).nextDistance = 6;
+                    lineS8.get(i + 1).preDistance = 6;
+                } else {
+                    lineS8.get(i).nextDistance = 2;
+                    lineS8.get(i + 1).preDistance = 2;
+                }
             }
         }
 
         lineSet.add(line1);
         lineSet.add(line2);
         lineSet.add(line3);
-//        lineSet.add(line10);
-//        lineSet.add(lineS1);
-//        lineSet.add(lineS8);
-//        totalStaion = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
-        totalStaion = line1.size() + line2.size() + line3.size();
+        lineSet.add(line10);
+        lineSet.add(lineS1);
+        lineSet.add(lineS8);
+        totalStaion = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
+//        totalStaion = line1.size() + line2.size() + line3.size();
         System.out.println("总的站点数量：" + totalStaion);
+        System.out.println("---1：" + line1.size());
+        System.out.println("---2：" + line2.size());
+        System.out.println("---3：" + line3.size());
     }
 }
