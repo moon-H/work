@@ -25,6 +25,7 @@ public class DataBuilder {
     public static int totalStaion = 0;//总的站点数量
 
     static {
+        System.out.println("数据初始化---");
 
         //1号线
         String line1Str = "迈皋桥站、红山动物园站、南京站、新模范马路站、玄武门站、鼓楼站、珠江路站、新街口站、张府园站、三山街站、中华门站、安德门站、天隆寺站、软件大道站、花神庙站、南京南站、双龙大道站、河定桥站、胜太路站、百家湖站、小龙湾站、竹山路站、天印大道站、龙眠大道站、南医大·江苏经贸学院站、南京交院站、中国药科大学站";
@@ -78,6 +79,13 @@ public class DataBuilder {
             if (i < line3.size() - 1) {
                 line3.get(i).next = line3.get(i + 1);
                 line3.get(i + 1).prev = line3.get(i);
+                if (i % 4 == 0) {
+                    line3.get(i).nextDistance = 1;
+                    line3.get(i + 1).preDistance = 1;
+                } else {
+                    line3.get(i).nextDistance = 2;
+                    line3.get(i + 1).preDistance = 2;
+                }
             }
         }
 
@@ -125,11 +133,12 @@ public class DataBuilder {
 
         lineSet.add(line1);
         lineSet.add(line2);
-//        lineSet.add(line3);
+        lineSet.add(line3);
 //        lineSet.add(line10);
 //        lineSet.add(lineS1);
 //        lineSet.add(lineS8);
-        totalStaion = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
+//        totalStaion = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
+        totalStaion = line1.size() + line2.size() + line3.size();
         System.out.println("总的站点数量：" + totalStaion);
     }
 }
