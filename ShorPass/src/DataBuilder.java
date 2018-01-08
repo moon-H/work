@@ -36,6 +36,13 @@ public class DataBuilder {
             if (i < line1.size() - 1) {
                 line1.get(i).next = line1.get(i + 1);
                 line1.get(i + 1).prev = line1.get(i);
+                if (i % 3 == 0) {
+                    line1.get(i).nextDistance = i + 4;
+                    line1.get(i + 1).preDistance = i + 4;
+                } else {
+                    line1.get(i).nextDistance = i + 5;
+                    line1.get(i + 1).preDistance = i + 5;
+                }
             }
         }
 
@@ -50,6 +57,13 @@ public class DataBuilder {
             if (i < line2.size() - 1) {
                 line2.get(i).next = line2.get(i + 1);
                 line2.get(i + 1).prev = line2.get(i);
+                if (i % 2 == 0) {
+                    line2.get(i).nextDistance = i + 2;
+                    line2.get(i + 1).preDistance = i + 2;
+                } else {
+                    line2.get(i).nextDistance = i + 3;
+                    line2.get(i + 1).preDistance = i + 3;
+                }
             }
         }
 
@@ -111,10 +125,10 @@ public class DataBuilder {
 
         lineSet.add(line1);
         lineSet.add(line2);
-        lineSet.add(line3);
-        lineSet.add(line10);
-        lineSet.add(lineS1);
-        lineSet.add(lineS8);
+//        lineSet.add(line3);
+//        lineSet.add(line10);
+//        lineSet.add(lineS1);
+//        lineSet.add(lineS8);
         totalStaion = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
         System.out.println("总的站点数量：" + totalStaion);
     }

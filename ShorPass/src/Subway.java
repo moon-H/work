@@ -3,6 +3,7 @@
  */
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -83,12 +84,39 @@ public class Subway {
                 continue;
             }
             LinkedHashSet<Station> set = station.getAllPassedStations(s);//参数station到s所经过的所有站点的集合
+//            int distance = getDistance(set);
+//            if (distance < minPatn) {
+//                minPatn = distance;
+//                rets = s;
+//            }
             if (set.size() < minPatn) {
                 minPatn = set.size();
                 rets = s;
             }
         }
         return rets;
+    }
+
+    /**
+     * 获取容器内经过站点的距离
+     *
+     * @param set
+     * @return
+     */
+    private int getDistance(LinkedHashSet<Station> set) {
+        int distance = 0;
+        List<Station> list = new ArrayList<>();
+        list.addAll(set);
+        for (int i = 0; i < list.size(); i++) {
+            if (i < list.size() - 1) {
+                Station currentStation = list.get(i);
+                Station nextStation = list.get(i + 1);
+//                if (currentStation.next.getName().equals(nextStation.getName())) {
+                distance += currentStation.nextDistance;
+//                }
+            }
+        }
+        return distance;
     }
 
     //获取参数station直接相连的所有站，包括交叉线上面的站

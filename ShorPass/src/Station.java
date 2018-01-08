@@ -8,9 +8,9 @@ import java.util.Map;
 
 /**
  * desc：地铁站对象
+ *
  * @author chaisson
  * @since 2015-5-31 上午10:22:44
- *
  */
 public class Station {
 
@@ -20,10 +20,14 @@ public class Station {
 
     public Station next; //本站在lineNo线上面的后一个站
 
-    //本站到某一个目标站(key)所经过的所有站集合(value)，保持前后顺序
-    private Map<Station,LinkedHashSet<Station>> orderSetMap = new HashMap<Station,LinkedHashSet<Station>>();
+    public int preDistance;//本站在lineNo线上距前一站的距离
 
-    public Station (String name){
+    public int nextDistance;//本站在lineNo线上距后一站的距离
+
+    //本站到某一个目标站(key)所经过的所有站集合(value)，保持前后顺序
+    private Map<Station, LinkedHashSet<Station>> orderSetMap = new HashMap<Station, LinkedHashSet<Station>>();
+
+    public Station(String name) {
         this.name = name;
     }
 
@@ -36,7 +40,7 @@ public class Station {
     }
 
     public LinkedHashSet<Station> getAllPassedStations(Station station) {
-        if(orderSetMap.get(station) == null){
+        if (orderSetMap.get(station) == null) {
             LinkedHashSet<Station> set = new LinkedHashSet<Station>();
             set.add(this);
             orderSetMap.put(station, set);
@@ -50,11 +54,11 @@ public class Station {
 
     @Override
     public boolean equals(Object obj) {
-        if(this == obj){
+        if (this == obj) {
             return true;
-        } else if(obj instanceof Station){
+        } else if (obj instanceof Station) {
             Station s = (Station) obj;
-            if(s.getName().equals(this.getName())){
+            if (s.getName().equals(this.getName())) {
                 return true;
             } else {
                 return false;
