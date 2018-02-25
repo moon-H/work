@@ -22,7 +22,7 @@ public class DataBuilder {
     public static List<Station> lineS1 = new ArrayList<Station>();//s1号线
     public static List<Station> lineS8 = new ArrayList<Station>();//s8号线
     public static Set<List<Station>> lineSet = new HashSet<List<Station>>();//所有线集合
-    public static int totalStaion = 0;//总的站点数量
+    public static int totalStation = 0;//总的站点数量
 
     static {
         System.out.println("数据初始化---");
@@ -158,9 +158,9 @@ public class DataBuilder {
         lineSet.add(line10);
         lineSet.add(lineS1);
         lineSet.add(lineS8);
-        totalStaion = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
-//        totalStaion = line1.size() + line2.size() + line3.size();
-        System.out.println("总的站点数量：" + totalStaion);
+        totalStation = line1.size() + line2.size() + line3.size() + line10.size() + lineS1.size() + lineS8.size();
+//        totalStation = line1.size() + line2.size() + line3.size();
+        System.out.println("总的站点数量：" + totalStation);
         System.out.println("---1：" + line1.size());
         System.out.println("---2：" + line2.size());
         System.out.println("---3：" + line3.size());

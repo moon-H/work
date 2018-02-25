@@ -3,7 +3,6 @@
  */
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class Subway {
      */
     //计算从s1站到s2站的最短经过路径
     public void calculate(Station s1, Station s2) {
-        if (outList.size() == DataBuilder.totalStaion) {
+        if (outList.size() == DataBuilder.totalStation) {
             System.out.println("111找到目标站点：" + s2.getName() + "，共经过" + (s1.getAllPassedStations(s2).size() - 1) + "站");
             for (Station station : s1.getAllPassedStations(s2)) {
                 System.out.print(station.getName() + "->");
@@ -183,7 +182,7 @@ public class Subway {
      */
 
     public static void main(String[] args) {
-        System.out.println(DataBuilder.totalStaion);
+        System.out.println(DataBuilder.totalStation);
 
         List<Station> calLine = DataBuilder.line2;
         for (int i = 0; i < calLine.size(); i++) {
