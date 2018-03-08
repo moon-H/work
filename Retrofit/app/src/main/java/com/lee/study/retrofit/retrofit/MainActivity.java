@@ -1,4 +1,4 @@
-package com.lee.study.retrofit;
+package com.lee.study.retrofit.retrofit;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -7,12 +7,19 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.lee.study.retrofit.R;
+import com.lee.study.retrofit.base.BaseGateway;
+import com.lee.study.retrofit.base.Request;
+import com.lee.study.retrofit.base.utils.Utils;
+import com.lee.study.retrofit.bean.GetMessageListRs;
+import com.lee.study.retrofit.bean.RequestWalletLoginRs;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import io.reactivex.Observable;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -54,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
         OkHttpClient.Builder client = new OkHttpClient.Builder();
         client.addInterceptor(logging);
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(API_URL).addConverterFactory(GsonConverterFactory.create()).client(client.build()).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(API_URL).addConverterFactory
+            (GsonConverterFactory.create()).client(client.build()).build();
         // Create an instance of our GitHub API interface.
         //        GitHub github = retrofit.create(GitHub.class);
         SKPEvent skpEvent = retrofit.create(SKPEvent.class);
@@ -64,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
         //        String param = "{'GetPicListRq':{'flag':0,'walletId':'000001'}}";
         String param = converRequest(req);
         Log.d(TAG, "param = " + param);
-        RequestBody requestBody = RequestBody.create(MediaType.parse("Content-Type, application/json"), param);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("Content-Type, " +
+            "application/json"), param);
 
         // Create a call instance for looking up Retrofit contributors.
         Call<Object> call = skpEvent.getEventList(requestBody);
@@ -93,11 +102,22 @@ public class MainActivity extends AppCompatActivity {
     //https://www.shankephone.com:8180/corpay/ci/event/getPicList
     public interface SKPEvent {
         //        @GET("/repos/{owner}/{repo}/contributors")
-        //        Call<List<Contributor>> contributors(@Path("owner") String owner, @Path("repo") String repo);
+        //        Call<List<Contributor>> contributors(@Path("owner") String owner, @Path("repo")
+        // String repo);
         //        @POST("corpay/ci/event/getPicList")
         @Headers({"Content-Type: application/json; charset=UTF-8"})
         @POST(BASE_PATH + "event/getPicList")
         Call<Object> getEventList(@Body RequestBody body);
+
+
+        @Headers({BaseGateway.BASE_HEAD})
+        @POST(BaseGateway.BASE_PATH + "inbox/getMessageList")
+        Observable<GetMessageListRs> getInboxList(@Body RequestBody body);
+
+        @Headers({BaseGateway.BASE_HEAD})
+        @POST(BaseGateway.BASE_PATH + "client/requestWalletLogin")
+        Observable<RequestWalletLoginRs> loginByPwd(@Body RequestBody body);
+
 
     }
 

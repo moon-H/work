@@ -1,4 +1,4 @@
-package com.lee.study.retrofit;
+package com.lee.study.retrofit.retrofit;
 
 import java.io.Serializable;
 

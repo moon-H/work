@@ -1,4 +1,6 @@
-package com.lee.study.retrofit;
+package com.lee.study.retrofit.retrofit;
+
+import com.lee.study.retrofit.base.Request;
 
 /**
  * Created by lenovo on 2016/12/13.

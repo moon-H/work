@@ -1,4 +1,6 @@
-package com.lee.study.retrofit;
+package com.lee.study.retrofit.retrofit;
+
+import com.lee.study.retrofit.base.Response;
 
 import java.util.List;
 
