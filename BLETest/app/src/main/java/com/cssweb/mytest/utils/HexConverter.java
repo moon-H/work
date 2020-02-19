@@ -1,5 +1,5 @@
 
-package com.cssweb.mytest;
+package com.cssweb.mytest.utils;
 
 public class HexConverter {
 

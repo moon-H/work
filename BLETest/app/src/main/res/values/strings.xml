@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">BLETest</string>
+    <string name="basiclib_permission_calendar">\"日历\"</string>
+    <string name="basiclib_permission_camera">\"相机\"</string>
+    <string name="basiclib_permission_contacts">\"通讯录\"</string>
+    <string name="basiclib_permission_location">\"位置\"</string>
+    <string name="basiclib_permission_microphone">\"麦克风\"</string>
+    <string name="basiclib_permission_phone">\"电话\"</string>
+    <string name="basiclib_permission_sensors">\"身体传感器\"</string>
+    <string name="basiclib_permission_sms">\"短信\"</string>
+    <string name="basiclib_permission_storage">\"存储\"</string>
+    <string name="basiclib_permission_app">闪客蜂需要访问&#160;</string>
+    <string name="basiclib_permission">&#160;权限</string>
+    <string name="basiclib_permission_grant">&#160;授权</string>
+    <string name="basiclib_permission_refuse">&#160;拒绝</string>
+    <string name="basiclib_share_title">分享</string>
+    <string name="basiclib_share_success">分享成功</string>
+    <string name="basiclib_share_failed">分享失败</string>
 </resources>

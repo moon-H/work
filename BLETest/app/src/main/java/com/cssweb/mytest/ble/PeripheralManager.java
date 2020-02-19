@@ -1,4 +1,4 @@
-package com.cssweb.mytest;
+package com.cssweb.mytest.ble;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -22,6 +22,9 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.cssweb.mytest.Common;
+import com.cssweb.mytest.utils.HexConverter;
 
 import java.util.UUID;
 

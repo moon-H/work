@@ -1,6 +1,8 @@
-package com.cssweb.mytest;
+package com.cssweb.mytest.ble;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.le.ScanResult;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -9,8 +11,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.cssweb.mytest.Common;
+import com.cssweb.mytest.utils.DateUtils;
+import com.cssweb.mytest.utils.HexConverter;
+import com.cssweb.mytest.R;
 import com.cssweb.mytest.gson.GsonManager;
 import com.cssweb.mytest.threadpool.ThreadPoolManager;
+import com.cssweb.mytest.utils.MLog;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -27,6 +34,7 @@ public class BlePeripheralActivity extends Activity {
     private Handler mMyHandler = new Handler();
     private TextView mTextView;
     private StringBuilder mStringBuilder = new StringBuilder();
+    private CenterManager mCenterManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,22 +43,37 @@ public class BlePeripheralActivity extends Activity {
         setContentView(R.layout.layout_periphral);
         mPeripheralManager = new PeripheralManager(BlePeripheralActivity.this);
         mPeripheralManager.setOnPeripheralCallback(mOnPeripheralCallback);
-
+        mCenterManager = new CenterManager(BlePeripheralActivity.this);
         mTextView = (TextView) findViewById(R.id.tv_log);
         findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String hexData = "88997766";
-                mPeripheralManager.startAdvertise(Common.UUID_SERVICE_ENTRY_GATE, Common.UUID_CHARACTERISTIC_DATA_SHARE, HexConverter
-                    .hexStringToBytes(hexData));
+                startAdvertise();
             }
         });
 
         Log.d(TAG, "-------" + TextUtils.equals("11", null));
         Log.d(TAG, "------222-" + parseMoney(300));
         GsonManager.generateGson();
-//        threadTest();
-//        sortTest();
+        //        threadTest();
+        //        sortTest();
+
+        findViewById(R.id.btn_scan).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scanBLEBroadcast();
+            }
+        });
+
+    }
+
+    /**
+     * 发送BLE广播
+     */
+    private void startAdvertise() {
+        String hexData = "88997766";
+        mPeripheralManager.startAdvertise(Common.UUID_SERVICE_ENTRY_GATE, Common.UUID_CHARACTERISTIC_DATA_SHARE,
+            HexConverter.hexStringToBytes(hexData));
     }
 
     /**
@@ -182,7 +205,8 @@ public class BlePeripheralActivity extends Activity {
     };
 
     private void displayLogData(String data) {
-        mStringBuilder.append(data).append("\n");
+        MLog.d(TAG, data);
+        mStringBuilder.append(DateUtils.formatDate2(System.currentTimeMillis())+" 【"+data+"】").append("\n");
 
         mTextView.setText(mStringBuilder.toString());
     }
@@ -246,6 +270,81 @@ public class BlePeripheralActivity extends Activity {
 
             return (a.distance - b.distance);
         }
+    }
+
+    private void scanBLEBroadcast() {
+        mCenterManager.startScanLeDevice(Common.UUID_SERVICE_ENTRY_GATE, 10000);
+        mCenterManager.setOnCenterCallback(new CenterManager.OnCenterCallback() {
+            @Override
+            public void onStartScan() {
+                displayLogData("开始扫描");
+
+            }
+
+            @Override
+            public void onScanComplete(ArrayList<ScanResult> list) {
+                displayLogData("扫描完成");
+
+            }
+
+            @Override
+            public void onScanFailed(int code) {
+                displayLogData("扫描失败");
+
+            }
+
+            @Override
+            public void onScanCompleteNewApi(ScanResult scanResult) {
+                MLog.d(TAG, "onScanCompleteNewApi");
+                final BroadCastData data = BLEDataParser.parseNewApi(scanResult);
+                if (data != null) {
+                    displayLogData("解析到的广播数据:" + data.toString());
+                } else {
+                    displayLogData("解析广播数据异常");
+                }
+                startAdvertise();
+            }
+
+            @Override
+            public void onScanCompleteOldApi(byte[] scanRecord) {
+
+            }
+
+            @Override
+            public void onGattServiceDiscovered(BluetoothGatt gatt) {
+
+            }
+
+            @Override
+            public void onGattServiceDiscoveredFailed(int code) {
+
+            }
+
+            @Override
+            public void onConnectSuccess(BluetoothGatt gatt) {
+
+            }
+
+            @Override
+            public void onConnectFailed(int code) {
+
+            }
+
+            @Override
+            public void onWriteDataSuccess() {
+
+            }
+
+            @Override
+            public void onWriteDataFailed(int code) {
+
+            }
+
+            @Override
+            public void onCenterReceiveData(String data) {
+
+            }
+        });
     }
 
 }
