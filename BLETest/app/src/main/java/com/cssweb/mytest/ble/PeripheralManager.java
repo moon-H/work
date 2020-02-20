@@ -25,6 +25,7 @@ import android.util.Log;
 
 import com.cssweb.mytest.Common;
 import com.cssweb.mytest.utils.HexConverter;
+import com.cssweb.mytest.utils.MLog;
 
 import java.util.UUID;
 
@@ -60,6 +61,8 @@ public class PeripheralManager {
     private String mTempAdvData;
     private CountDownTimer mStopAdvertiseTimer;
 
+    private boolean isAdvertising = false;//标识是否已发送广播，15s后主动停止广播
+
     public PeripheralManager(Context context) {
         try {
             mContext = context;
@@ -71,35 +74,6 @@ public class PeripheralManager {
         initStopAdvertiseTimer();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void startAdvertise(UUID serviceUUID, UUID dataUUID, byte[] advData1) {
-        try {
-            Log.d(TAG, "开始广播 数据长度---" + advData1.length + " 内容 = " + HexConverter.bytesToHexString(advData1));
-            stopAdvertiseTimer();
-            startAdvertiseTimer();//每个广播有效期15s
-
-            mTempAdvData = HexConverter.bytesToHexString(advData1);
-            initAdvertise(serviceUUID, dataUUID, advData1);
-            //        sendBleBroadCast(ACTION_ADVERTISE_START);
-            mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-            if (mGattServer == null) {
-                initService(serviceUUID, dataUUID);
-                //            Log.d(TAG, "mGattServer == null");
-                mGattServer = mBluetoothManager.openGattServer(mContext, mGattServerCallback);
-                mGattServer.addService(mDataShareService);
-            }
-            //        mGattServer.addService(mTransactionService);
-            if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
-                mAdvertiser = mBluetoothAdapter.getBluetoothLeAdvertiser();
-                mAdvertiser.startAdvertising(mAdvSettings, mAdvDataDeviceCode, mAdvScanResponse, mAdvCallback);
-                //            mAdvertiser.startAdvertising(mAdvSettings, mAdvDataTransaction, mAdvScanResponse, mAdvCallback);
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "startAdvertise occur exception ", e);
-            if (mCallback != null)
-                mCallback.onAdvertiseFailed(-99);
-        }
-    }
 
     /**
      * 初始化服务。
@@ -117,7 +91,7 @@ public class PeripheralManager {
                 addServiceUuid(new ParcelUuid(serviceUUID)).
                 addServiceData(new ParcelUuid(dataUUID), advData1).build();
         } catch (Exception e) {
-            Log.d(TAG, " initAdvertise occur error: ", e);
+            MLog.d(TAG, " initAdvertise occur error: ", e);
         }
 
     }
@@ -132,9 +106,12 @@ public class PeripheralManager {
             mAdvScanResponse = new AdvertiseData.Builder().setIncludeDeviceName(false).build();
             //--------service1 start-------------
             mDataShareService = new BluetoothGattService(serviceUUID, BluetoothGattService.SERVICE_TYPE_PRIMARY);
-            mDataShareCharacteristic = new BluetoothGattCharacteristic(Common.UUID_CHARACTERISTIC_DATA_SHARE, BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-            /* No permissions */ BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY);
-            BluetoothGattDescriptor descriptor = new BluetoothGattDescriptor(Common.UUID_CHARACTERISTIC_DATA_SHARE, (BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_NOTIFY));
+            mDataShareCharacteristic = new BluetoothGattCharacteristic(Common.UUID_CHARACTERISTIC_DATA_SHARE,
+                BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+                /* No permissions
+                 * */ BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY);
+            BluetoothGattDescriptor descriptor = new BluetoothGattDescriptor(Common.UUID_CHARACTERISTIC_DATA_SHARE,
+                (BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_NOTIFY));
             descriptor.setValue(new byte[]{0, 0});
             mDataShareCharacteristic.addDescriptor(descriptor);
             mDataShareService.addCharacteristic(mDataShareCharacteristic);
@@ -146,10 +123,13 @@ public class PeripheralManager {
         //--------service2 start-------------
         //        mTransactionService = new BluetoothGattService(Common.UUID_SERVICE_TRANSACTION, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
-        //        mTransactionCharacteristic = new BluetoothGattCharacteristic(Common.UUID_CHARACTERISTIC_TRANSACTION, BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-        //                    /* No permissions */ BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY);
+        //        mTransactionCharacteristic = new BluetoothGattCharacteristic(Common.UUID_CHARACTERISTIC_TRANSACTION, BluetoothGattCharacteristic
+        //        .PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+        //                    /* No permissions */ BluetoothGattCharacteristic.PERMISSION_WRITE | BluetoothGattCharacteristic.PERMISSION_READ |
+        //                    BluetoothGattCharacteristic.PROPERTY_NOTIFY);
 
-        //        BluetoothGattDescriptor descriptorTransaction = new BluetoothGattDescriptor(Common.UUID_CHARACTERISTIC_TRANSACTION, (BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_NOTIFY));
+        //        BluetoothGattDescriptor descriptorTransaction = new BluetoothGattDescriptor(Common.UUID_CHARACTERISTIC_TRANSACTION,
+        //        (BluetoothGattDescriptor.PERMISSION_READ | BluetoothGattDescriptor.PERMISSION_WRITE | BluetoothGattCharacteristic.PROPERTY_NOTIFY));
         //        descriptorTransaction.setValue(new byte[]{0, 0});
         //        mTransactionCharacteristic.addDescriptor(descriptorTransaction);
         //        mTransactionService.addCharacteristic(mTransactionCharacteristic);
@@ -188,7 +168,8 @@ public class PeripheralManager {
         @Override
         public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattDescriptor descriptor) {
             super.onDescriptorReadRequest(device, requestId, offset, descriptor);
-            Log.d(TAG, "onDescriptorReadRequest  device = " + device.getName() + " requestId = " + requestId + " offset =" + offset + " UUID = " + descriptor.getUuid().toString());
+            Log.d(TAG,
+                "onDescriptorReadRequest  device = " + device.getName() + " requestId = " + requestId + " offset =" + offset + " UUID = " + descriptor.getUuid().toString());
             if (descriptor.getValue() != null)
                 Log.d(TAG, "onDescriptorReadRequest = " + HexConverter.bytesToHexString(descriptor.getValue()));
             else {
@@ -199,7 +180,8 @@ public class PeripheralManager {
         @Override
         public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
-            Log.d(TAG, "onCharacteristicReadRequest  device = " + device.getName() + " requestId = " + requestId + " offset =" + offset + " UUID = " + characteristic.getUuid().toString());
+            Log.d(TAG, "onCharacteristicReadRequest  device = " + device.getName() + " requestId = " + requestId + " offset =" + offset + " UUID = "
+                + characteristic.getUuid().toString());
             if (characteristic.getValue() != null)
                 Log.d(TAG, "onCharacteristicReadRequest = " + HexConverter.bytesToHexString(characteristic.getValue()));
             else {
@@ -212,17 +194,20 @@ public class PeripheralManager {
         }
 
         @Override
-        public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
+        public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic,
+                                                 boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
             super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value);
             String hexValue = HexConverter.bytesToHexString(value);
             Log.d(TAG, "onCharacteristicWriteRequest  value = " + hexValue);
         }
 
         @Override
-        public void onDescriptorWriteRequest(final BluetoothDevice device, final int requestId, final BluetoothGattDescriptor descriptor, boolean preparedWrite, boolean responseNeeded, int offset, final byte[] value) {
+        public void onDescriptorWriteRequest(final BluetoothDevice device, final int requestId, final BluetoothGattDescriptor descriptor,
+                                             boolean preparedWrite, boolean responseNeeded, int offset, final byte[] value) {
             super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value);
             //周边收到消息
-            Log.d(TAG, "onDescriptorWriteRequest  device = " + device.getName() + " requestId =" + requestId + " descriptor UUID = " + descriptor.getUuid().toString());
+            Log.d(TAG,
+                "onDescriptorWriteRequest  device = " + device.getName() + " requestId =" + requestId + " descriptor UUID = " + descriptor.getUuid().toString());
             Log.d(TAG, "onDescriptorWriteRequest  preparedWrite = " + preparedWrite + " responseNeeded =" + responseNeeded + " offset = " + offset);
             String hexValue = HexConverter.bytesToHexString(value);
             Log.d(TAG, "onDescriptorWriteRequest  value = " + hexValue);
@@ -322,34 +307,91 @@ public class PeripheralManager {
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
-    /**
-     * 数据同步时使用此方法将数据同步给其他pad
-     */
-//    public void notifyData(byte[] data) {
-//        Log.d(TAG, "notifyData= " + HexConverter.bytesToHexString(data));
-//        for (String key : DataContainer.mPeripheralConnectDevices.keySet()) {
-//            if (mGattServer != null && mDataShareCharacteristic != null) {
-//                mDataShareCharacteristic.setValue(data);
-//                boolean result = mGattServer.notifyCharacteristicChanged(DataContainer.mPeripheralConnectDevices.get(key), mDataShareCharacteristic, true);
-//                Log.d(TAG, "##### NotificationToDevices result= " + result + " deviceAddress = " + key);
-//            } else {
-//                Log.d(TAG, "notify data failed");
-//            }
-//        }
-//    }
+    //    /**
+    //     * 数据同步时使用此方法将数据同步给其他pad
+    //     */
+    //    public void notifyData(byte[] data) {
+    //        Log.d(TAG, "notifyData= " + HexConverter.bytesToHexString(data));
+    //        for (String key : DataContainer.mPeripheralConnectDevices.keySet()) {
+    //            if (mGattServer != null && mDataShareCharacteristic != null) {
+    //                mDataShareCharacteristic.setValue(data);
+    //                boolean result = mGattServer.notifyCharacteristicChanged(DataContainer.mPeripheralConnectDevices.get(key),
+    //                mDataShareCharacteristic, true);
+    //                Log.d(TAG, "##### NotificationToDevices result= " + result + " deviceAddress = " + key);
+    //            } else {
+    //                Log.d(TAG, "notify data failed");
+    //            }
+    //        }
+    //    }
 
-    /**
-     * 数据同步时使用此方法将数据同步给其他pad
-     */
+    //    /**
+    //     * 数据同步时使用此方法将数据同步给其他pad
+    //     */
     //    public void notifyPhoneData(byte[] data) {
     //        Log.d(TAG, "notifyPhoneData= " + HexConverter.bytesToHexString(data));
     //        for (String key : DataContainer.mPeripheralConnectDevices.keySet()) {
     //            mTransactionCharacteristic.setValue(data);
-    //            boolean result = mGattServer.notifyCharacteristicChanged(DataContainer.mPeripheralConnectDevices.get(key), mTransactionCharacteristic, true);
+    //            boolean result = mGattServer.notifyCharacteristicChanged(DataContainer.mPeripheralConnectDevices.get(key),
+    //            mTransactionCharacteristic, true);
     //            Log.d(TAG, "##### notifyPhoneData result= " + result + " deviceAddress = " + key);
     //        }
     //    }
+
+
+    /**
+     * 准备发送广播
+     *
+     * @param serviceUUID
+     * @param dataUUID
+     * @param advData1    广播数据
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public int preStartAdvertise(UUID serviceUUID, UUID dataUUID, byte[] advData1) {
+        try {
+            if (isAdvertising) {
+                MLog.d(TAG, "正在广播中....");
+                return -1;
+            }
+            Log.d(TAG, "准备广播 数据长度---" + advData1.length + " 内容 = " + HexConverter.bytesToHexString(advData1));
+            mTempAdvData = HexConverter.bytesToHexString(advData1);
+            initAdvertise(serviceUUID, dataUUID, advData1);
+            mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (mGattServer == null) {
+                initService(serviceUUID, dataUUID);
+                mGattServer = mBluetoothManager.openGattServer(mContext, mGattServerCallback);
+                mGattServer.addService(mDataShareService);
+            }
+            stopAdvertise();
+            stopAdvertiseTimer();
+            startAdvertise();
+            startAdvertiseTimer();//每个广播有效期15s
+        } catch (Exception e) {
+            MLog.d(TAG, "preStartAdvertise occur exception ", e);
+            if (mCallback != null)
+                mCallback.onAdvertiseFailed(-99);
+            return -1;
+        }
+        return 0;
+    }
+
+    /**
+     * 发送广播
+     */
+    private void startAdvertise() {
+        if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
+            mAdvertiser = mBluetoothAdapter.getBluetoothLeAdvertiser();
+            mAdvertiser.startAdvertising(mAdvSettings, mAdvDataDeviceCode, mAdvScanResponse, mAdvCallback);
+            MLog.d(TAG, "开始广播");
+            isAdvertising = true;
+            //            mAdvertiser.startAdvertising(mAdvSettings, mAdvDataTransaction, mAdvScanResponse, mAdvCallback);
+        }
+    }
+
+    /**
+     * 停止广播
+     */
     public void stopAdvertise() {
+        isAdvertising = false;
         Log.d(TAG, "stopAdvertise");
         if (!isBluetoothOpened()) {
             Log.d(TAG, "bluetooth not open");

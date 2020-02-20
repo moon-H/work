@@ -27,8 +27,9 @@ import java.util.List;
 
 /**
  * Created by liwx on 2018/6/8.
+ * 用于测试BLE 发送广播，接收广播、传输数据等
  */
-public class BlePeripheralActivity extends Activity {
+public class BLEHomeActivity extends Activity {
     private static final String TAG = "BlePeripheralActivity";
     private PeripheralManager mPeripheralManager;
     private Handler mMyHandler = new Handler();
@@ -41,9 +42,9 @@ public class BlePeripheralActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.layout_periphral);
-        mPeripheralManager = new PeripheralManager(BlePeripheralActivity.this);
+        mPeripheralManager = new PeripheralManager(BLEHomeActivity.this);
         mPeripheralManager.setOnPeripheralCallback(mOnPeripheralCallback);
-        mCenterManager = new CenterManager(BlePeripheralActivity.this);
+        mCenterManager = new CenterManager(BLEHomeActivity.this);
         mTextView = (TextView) findViewById(R.id.tv_log);
         findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,8 +73,9 @@ public class BlePeripheralActivity extends Activity {
      */
     private void startAdvertise() {
         String hexData = "88997766";
-        mPeripheralManager.startAdvertise(Common.UUID_SERVICE_ENTRY_GATE, Common.UUID_CHARACTERISTIC_DATA_SHARE,
+        int startResult = mPeripheralManager.preStartAdvertise(Common.UUID_SERVICE_ENTRY_GATE, Common.UUID_CHARACTERISTIC_DATA_SHARE,
             HexConverter.hexStringToBytes(hexData));
+        displayLogData("广播结果:" + startResult);
     }
 
     /**
@@ -206,7 +208,7 @@ public class BlePeripheralActivity extends Activity {
 
     private void displayLogData(String data) {
         MLog.d(TAG, data);
-        mStringBuilder.append(DateUtils.formatDate2(System.currentTimeMillis())+" 【"+data+"】").append("\n");
+        mStringBuilder.append(DateUtils.formatDate2(System.currentTimeMillis()) + " 【" + data + "】").append("\n");
 
         mTextView.setText(mStringBuilder.toString());
     }
@@ -272,6 +274,9 @@ public class BlePeripheralActivity extends Activity {
         }
     }
 
+    /**
+     * 扫描广播
+     */
     private void scanBLEBroadcast() {
         mCenterManager.startScanLeDevice(Common.UUID_SERVICE_ENTRY_GATE, 10000);
         mCenterManager.setOnCenterCallback(new CenterManager.OnCenterCallback() {
