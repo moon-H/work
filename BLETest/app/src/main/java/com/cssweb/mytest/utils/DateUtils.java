@@ -51,7 +51,7 @@ public class DateUtils {
      * 2000年到现在的毫秒格式化成yyyy-MM-dd HH:mm:ss:SSS格式
      */
     public static String formatDate2(long times) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS", Locale.CHINA);
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss:SSS", Locale.CHINA);
         return sdf.format(times);
     }
 }

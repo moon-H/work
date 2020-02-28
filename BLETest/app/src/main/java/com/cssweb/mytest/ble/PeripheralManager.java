@@ -86,7 +86,7 @@ public class PeripheralManager {
     private void initAdvertise(UUID serviceUUID, UUID dataUUID, byte[] advData1) {
         try {
             mAdvDataDeviceCode = new AdvertiseData.Builder().
-                setIncludeDeviceName(false).
+                setIncludeDeviceName(true).
                 setIncludeTxPowerLevel(true).
                 addServiceUuid(new ParcelUuid(serviceUUID)).
                 addServiceData(new ParcelUuid(dataUUID), advData1).build();
@@ -103,7 +103,7 @@ public class PeripheralManager {
                 setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY).
                 setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH).setConnectable(true).build();
             //        byte[] data = HexConverter.hexStringToBytes(Integer.toHexString(Integer.parseInt(mEditText.getText().toString())));
-            mAdvScanResponse = new AdvertiseData.Builder().setIncludeDeviceName(false).build();
+            mAdvScanResponse = new AdvertiseData.Builder().setIncludeDeviceName(true).build();
             //--------service1 start-------------
             mDataShareService = new BluetoothGattService(serviceUUID, BluetoothGattService.SERVICE_TYPE_PRIMARY);
             mDataShareCharacteristic = new BluetoothGattCharacteristic(Common.UUID_CHARACTERISTIC_DATA_SHARE,
@@ -343,18 +343,19 @@ public class PeripheralManager {
      *
      * @param serviceUUID
      * @param dataUUID
-     * @param advData1    广播数据
+     * @param advData     广播数据
+     * @param useCustomTimmer
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public int preStartAdvertise(UUID serviceUUID, UUID dataUUID, byte[] advData1) {
+    public int preStartAdvertise(UUID serviceUUID, UUID dataUUID, byte[] advData, boolean useCustomTimmer) {
         try {
             if (isAdvertising) {
                 MLog.d(TAG, "正在广播中....");
                 return -1;
             }
-            Log.d(TAG, "准备广播 数据长度---" + advData1.length + " 内容 = " + HexConverter.bytesToHexString(advData1));
-            mTempAdvData = HexConverter.bytesToHexString(advData1);
-            initAdvertise(serviceUUID, dataUUID, advData1);
+            Log.d(TAG, "准备广播 数据长度---" + advData.length + " 内容 = " + HexConverter.bytesToHexString(advData));
+            mTempAdvData = HexConverter.bytesToHexString(advData);
+            initAdvertise(serviceUUID, dataUUID, advData);
             mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
             if (mGattServer == null) {
                 initService(serviceUUID, dataUUID);
@@ -362,9 +363,11 @@ public class PeripheralManager {
                 mGattServer.addService(mDataShareService);
             }
             stopAdvertise();
-            stopAdvertiseTimer();
+            if (!useCustomTimmer)
+                stopAdvertiseTimer();
             startAdvertise();
-            startAdvertiseTimer();//每个广播有效期15s
+            if (!useCustomTimmer)
+                startAdvertiseTimer();//每个广播有效期15s
         } catch (Exception e) {
             MLog.d(TAG, "preStartAdvertise occur exception ", e);
             if (mCallback != null)

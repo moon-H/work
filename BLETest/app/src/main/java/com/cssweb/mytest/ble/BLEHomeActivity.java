@@ -6,17 +6,18 @@ import android.bluetooth.le.ScanResult;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.cssweb.mytest.Common;
-import com.cssweb.mytest.utils.DateUtils;
-import com.cssweb.mytest.utils.HexConverter;
 import com.cssweb.mytest.R;
-import com.cssweb.mytest.gson.GsonManager;
 import com.cssweb.mytest.threadpool.ThreadPoolManager;
+import com.cssweb.mytest.utils.DateUtils;
+import com.cssweb.mytest.utils.DeviceManager;
+import com.cssweb.mytest.utils.HexConverter;
 import com.cssweb.mytest.utils.MLog;
 
 import java.text.DecimalFormat;
@@ -24,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by liwx on 2018/6/8.
@@ -37,10 +40,20 @@ public class BLEHomeActivity extends Activity {
     private StringBuilder mStringBuilder = new StringBuilder();
     private CenterManager mCenterManager;
 
+    private Timer mTimer = new Timer();
+    private TimerTask mBLEScanTask;
+    private TimerTask mBLEAdvertiseTask;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
+        int flags =
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
+
+        final WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.flags |= flags;
+        getWindow().setAttributes(lp);
         setContentView(R.layout.layout_periphral);
         mPeripheralManager = new PeripheralManager(BLEHomeActivity.this);
         mPeripheralManager.setOnPeripheralCallback(mOnPeripheralCallback);
@@ -53,12 +66,6 @@ public class BLEHomeActivity extends Activity {
             }
         });
 
-        Log.d(TAG, "-------" + TextUtils.equals("11", null));
-        Log.d(TAG, "------222-" + parseMoney(300));
-        GsonManager.generateGson();
-        //        threadTest();
-        //        sortTest();
-
         findViewById(R.id.btn_scan).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +73,19 @@ public class BLEHomeActivity extends Activity {
             }
         });
 
+        initTask();
+        startBLETask();//开始BLE定时任务
+        //        GsonManager.generateGson();
+        //        threadTest();
+        //        sortTest();
+        setScreenBrightness();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopBLETask();
     }
 
     /**
@@ -73,8 +93,9 @@ public class BLEHomeActivity extends Activity {
      */
     private void startAdvertise() {
         String hexData = "88997766";
+        mPeripheralManager.stopAdvertise();
         int startResult = mPeripheralManager.preStartAdvertise(Common.UUID_SERVICE_ENTRY_GATE, Common.UUID_CHARACTERISTIC_DATA_SHARE,
-            HexConverter.hexStringToBytes(hexData));
+            HexConverter.hexStringToBytes(hexData), true);
         displayLogData("广播结果:" + startResult);
     }
 
@@ -87,7 +108,7 @@ public class BLEHomeActivity extends Activity {
             mMyHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    displayLogData("onAdvertiseSuccess  " + advData);
+                    displayLogData("广播成功  " + advData);
                 }
             });
         }
@@ -97,7 +118,7 @@ public class BLEHomeActivity extends Activity {
             mMyHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    displayLogData("onAdvertiseFailed " + code);
+                    displayLogData("广播失败 " + code);
                 }
             });
         }
@@ -208,9 +229,18 @@ public class BLEHomeActivity extends Activity {
 
     private void displayLogData(String data) {
         MLog.d(TAG, data);
-        mStringBuilder.append(DateUtils.formatDate2(System.currentTimeMillis()) + " 【" + data + "】").append("\n");
-
-        mTextView.setText(mStringBuilder.toString());
+        MLog.d(TAG, "StringBuilder 长度" + mStringBuilder.length());
+        if (mStringBuilder.length() > 30000) {
+            mStringBuilder.delete(0, mStringBuilder.length());
+        }
+        mStringBuilder.insert(0, DateUtils.formatDate2(System.currentTimeMillis()) + " 【" + data + "】" + "\n");
+        //        mStringBuilder.append(DateUtils.formatDate2(System.currentTimeMillis()) + " 【" + data + "】").append("\n");
+        mMyHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mTextView.setText(mStringBuilder.toString());
+            }
+        });
     }
 
     static DecimalFormat df = new DecimalFormat("######0");
@@ -278,7 +308,7 @@ public class BLEHomeActivity extends Activity {
      * 扫描广播
      */
     private void scanBLEBroadcast() {
-        mCenterManager.startScanLeDevice(Common.UUID_SERVICE_ENTRY_GATE, 10000);
+        mCenterManager.startScanLeDevice(Common.UUID_SERVICE_ENTRY_GATE, -1);
         mCenterManager.setOnCenterCallback(new CenterManager.OnCenterCallback() {
             @Override
             public void onStartScan() {
@@ -301,13 +331,13 @@ public class BLEHomeActivity extends Activity {
             @Override
             public void onScanCompleteNewApi(ScanResult scanResult) {
                 MLog.d(TAG, "onScanCompleteNewApi");
-                final BroadCastData data = BLEDataParser.parseNewApi(scanResult);
+                final String data = BLEDataParser.parseNewApiAdvertise(scanResult);
                 if (data != null) {
                     displayLogData("解析到的广播数据:" + data.toString());
                 } else {
                     displayLogData("解析广播数据异常");
                 }
-                startAdvertise();
+                //                startAdvertise();
             }
 
             @Override
@@ -350,6 +380,59 @@ public class BLEHomeActivity extends Activity {
 
             }
         });
+    }
+
+    private void startBLETask() {
+        mTimer.schedule(mBLEScanTask, 0, 1500 * 10);
+        mTimer.schedule(mBLEAdvertiseTask, 0, 1500 * 10);
+    }
+
+
+    private void stopBLETask() {
+        mBLEScanTask.cancel();
+        mBLEAdvertiseTask.cancel();
+        mTimer.cancel();
+    }
+
+    private void initTask() {
+        mBLEScanTask = new TimerTask() {
+            @Override
+            public void run() {
+                displayLogData("扫描中......");
+                mCenterManager.stopScan();
+                scanBLEBroadcast();
+                setScreenOn();
+            }
+        };
+        mBLEAdvertiseTask = new TimerTask() {
+            @Override
+            public void run() {
+                displayLogData("广播中......");
+                startAdvertise();
+                setScreenOn();
+            }
+        };
+    }
+
+    /**
+     * 点亮屏幕
+     */
+    private void setScreenOn() {
+        boolean isScreenOn = DeviceManager.isScreenOn(getApplicationContext());
+        MLog.d(TAG, "is screen on = " + isScreenOn);
+        if (!isScreenOn) {
+            DeviceManager.clickPowerBtn();
+        }
+    }
+
+
+    private void setScreenBrightness() {
+        int paramInt = 255;
+        Window localWindow = getWindow();
+        WindowManager.LayoutParams localLayoutParams = localWindow.getAttributes();
+        float f = paramInt / 255.0F;
+        localLayoutParams.screenBrightness = f;
+        localWindow.setAttributes(localLayoutParams);
     }
 
 }

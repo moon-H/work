@@ -548,7 +548,8 @@ public class CenterManager {
         MLog.d(TAG, "### start startScanNewApi " + uuid.toString());
         if (mBluetoothAdapter != null && mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON && mBluetoothLeScanner != null) {
             mScanResultArrayList.clear();
-            mHandler.postDelayed(mStopScanRunnable, scanTime);
+            if (scanTime > 0)
+                mHandler.postDelayed(mStopScanRunnable, scanTime);
             List<ScanFilter> bleScanFilters = new ArrayList<>();
             //            for (UUID uuid : uuidList) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

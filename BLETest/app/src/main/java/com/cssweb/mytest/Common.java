@@ -20,6 +20,7 @@ public class Common {
 
 
     public static final UUID UUID_SERVICE_ENTRY_GATE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
+//    public static final UUID UUID_SERVICE_ENTRY_GATE = UUID.fromString("10000000-0000-0000-0000-000000000000");
     public static final UUID UUID_SERVICE_EXIT_GATE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
 
     //    public static final UUID UUID_SERVICE_ENTRY_GATE = UUID.fromString("516d165d-8c96-4dda-83c0-9f1f21cff966");
@@ -28,6 +29,7 @@ public class Common {
     public static final UUID UUID_CHARACTERISTIC_TRANSACTION = UUID.fromString("000001FD-0000-1000-8000-00805f9b34fb");//用于广播交易数据
 
     public static final UUID UUID_CHARACTERISTIC_DATA_SHARE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");//用于广播设备编号
+//    public static final UUID UUID_CHARACTERISTIC_DATA_SHARE = UUID.fromString("10000000-0000-0000-0000-000000000000");//用于广播设备编号
     public static final String ACTION_SCREEN_ON = "com.cssweb.cloudag.ACTION_SCREEN_ON";
     public static final String ACTION_SCREEN_OFF = "com.cssweb.cloudag.ACTION_SCREEN_OFF";
 

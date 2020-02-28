@@ -90,6 +90,30 @@ public class BLEDataParser {
 
 
     /**
+     * 解析新api的广播包，提取广播数据.返回元数据，未处理过的
+     */
+    public static String parseNewApiAdvertise(final ScanResult scanResult) {
+        try {
+            if (scanResult == null) {
+                MLog.d(TAG, "scan result is null");
+                return "";
+            }
+            String data = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                data = getAdvData(scanResult.getScanRecord());
+                return data;
+            } else {
+                MLog.d(TAG, "parseNewApi SDK is  = " + Build.VERSION.SDK_INT);
+                return "";
+            }
+            //            return buildAdvData(data, "");
+        } catch (Exception e) {
+            MLog.d(TAG, "parseNewApi occur error::", e);
+            return "";
+        }
+    }
+
+    /**
      * 解析新api的广播包，提取广播数据
      */
     public static BroadCastData parseNewApi(final ScanResult scanResult) {
@@ -193,12 +217,12 @@ public class BLEDataParser {
         if (scanRecord != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 if (scanRecord.getServiceData() != null) {
-                    byte[] deviceCode = scanRecord.getServiceData().get(new ParcelUuid( Common.UUID_CHARACTERISTIC_DATA_SHARE));
-                    if (deviceCode != null) {
-                        data = HexConverter.bytesToHexString(deviceCode);
-                        MLog.d(TAG, "findDeviceCode = " + data);
+                    byte[] serviceData = scanRecord.getServiceData().get(new ParcelUuid(Common.UUID_CHARACTERISTIC_DATA_SHARE));
+                    if (serviceData != null) {
+                        data = HexConverter.bytesToHexString(serviceData);
+                        MLog.d(TAG, "serviceData = " + data);
                     } else {
-                        MLog.d(TAG, "getAdvData data is null or length is invalid " + " length = ");
+                        MLog.d(TAG, "getAdvData data is null " + HexConverter.bytesToHexString(serviceData));
                     }
                 }
             } else
