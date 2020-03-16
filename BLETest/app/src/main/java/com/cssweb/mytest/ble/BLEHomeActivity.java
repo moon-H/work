@@ -33,7 +33,7 @@ import java.util.TimerTask;
  * 用于测试BLE 发送广播，接收广播、传输数据等
  */
 public class BLEHomeActivity extends Activity {
-    private static final String TAG = "BlePeripheralActivity";
+    private static final String TAG = "BLEHomeActivity";
     private PeripheralManager mPeripheralManager;
     private Handler mMyHandler = new Handler();
     private TextView mTextView;
